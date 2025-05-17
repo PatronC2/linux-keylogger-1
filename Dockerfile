@@ -1,5 +1,5 @@
 # First stage: Run tests with TTY simulation
-FROM golang:1.23.6 AS test
+FROM golang:1.24.3 AS test
 
 WORKDIR /app
 COPY . ./
@@ -15,7 +15,7 @@ RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 # Second stage: Build the binary
-FROM golang:1.23.6 AS build
+FROM golang:1.24.3 AS build
 
 WORKDIR /app
 COPY --from=test /app ./
